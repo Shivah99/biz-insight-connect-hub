@@ -22,8 +22,8 @@ const Businesses = () => {
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([]);
-  const [industryFilter, setIndustryFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+  const [industryFilter, setIndustryFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   
   // Get unique industries for filter
@@ -47,14 +47,14 @@ const Businesses = () => {
     }
     
     // Apply industry filter
-    if (industryFilter) {
+    if (industryFilter && industryFilter !== "all") {
       results = results.filter(
         (business) => business.industry === industryFilter
       );
     }
     
     // Apply type filter
-    if (typeFilter) {
+    if (typeFilter && typeFilter !== "all") {
       results = results.filter(
         (business) => business.type === typeFilter
       );
@@ -88,8 +88,8 @@ const Businesses = () => {
   
   const resetFilters = () => {
     setSearchQuery("");
-    setIndustryFilter("");
-    setTypeFilter("");
+    setIndustryFilter("all");
+    setTypeFilter("all");
     setSortBy("name");
     setSearchParams({});
   };
@@ -158,7 +158,7 @@ const Businesses = () => {
                       <SelectValue placeholder="All Industries" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Industries</SelectItem>
+                      <SelectItem value="all">All Industries</SelectItem>
                       {uniqueIndustries.map((industry) => (
                         <SelectItem key={industry} value={industry}>
                           {industry}
@@ -180,7 +180,7 @@ const Businesses = () => {
                       <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Types</SelectItem>
+                      <SelectItem value="all">All Types</SelectItem>
                       {Object.values(BusinessType).map((type) => (
                         <SelectItem key={type} value={type}>
                           {type}
