@@ -160,8 +160,8 @@ const Businesses = () => {
                     <SelectContent>
                       <SelectItem value="all">All Industries</SelectItem>
                       {uniqueIndustries.map((industry) => (
-                        <SelectItem key={industry} value={industry}>
-                          {industry}
+                        <SelectItem key={industry} value={industry || "unknown"}>
+                          {industry || "Unknown"}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -182,8 +182,8 @@ const Businesses = () => {
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
                       {Object.values(BusinessType).map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
+                        <SelectItem key={type} value={type || "unknown"}>
+                          {type || "Unknown"}
                         </SelectItem>
                       ))}
                     </SelectContent>
