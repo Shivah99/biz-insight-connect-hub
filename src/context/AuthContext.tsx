@@ -13,52 +13,80 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock data for our demo
-const MOCK_USERS = [
-  {
-    id: "1",
-    email: "user@example.com",
-    name: "John Doe",
-    role: UserRole.GENERAL,
-    createdAt: new Date("2023-01-01")
-  },
-  {
-    id: "2",
-    email: "business@example.com",
-    name: "Acme Corp",
-    role: UserRole.BUSINESS,
-    createdAt: new Date("2023-01-01")
-  }
-];
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for saved user in localStorage
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setIsLoading(false);
+    // Check for saved token in localStorage
+    const checkLoggedIn = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          // Fetch user profile with the token
+          const response = await fetch('http://localhost:5000/api/users/profile', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          
+          if (response.ok) {
+            const userData = await response.json();
+            // Transform backend data to match our User type
+            const authUser: User = {
+              id: userData._id,
+              name: userData.name,
+              email: userData.email,
+              role: userData.role as UserRole,
+              createdAt: new Date()
+            };
+            setUser(authUser);
+          } else {
+            // If token is invalid or expired, clear it
+            localStorage.removeItem('token');
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+          localStorage.removeItem('token');
+        }
+      }
+      setIsLoading(false);
+    };
+    
+    checkLoggedIn();
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // In a real app, this would be an API call
-      // For demo purposes, we'll use mock data
-      const foundUser = MOCK_USERS.find(u => u.email === email);
+      const response = await fetch('http://localhost:5000/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
       
-      if (!foundUser) {
-        throw new Error("Invalid credentials");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Invalid credentials');
       }
       
-      // In a real app, we would check the password here
+      const userData = await response.json();
       
-      setUser(foundUser);
-      localStorage.setItem('user', JSON.stringify(foundUser));
+      // Save token to localStorage
+      localStorage.setItem('token', userData.token);
+      
+      // Transform backend data to match our User type
+      const authUser: User = {
+        id: userData._id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role as UserRole,
+        createdAt: new Date()
+      };
+      
+      setUser(authUser);
     } catch (error) {
       console.error("Login failed", error);
       throw error;
@@ -70,21 +98,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (name: string, email: string, password: string, role: UserRole) => {
     setIsLoading(true);
     try {
-      // In a real app, this would be an API call
-      // For demo purposes, we'll create a new user locally
-      const newUser: User = {
-        id: Math.random().toString(36).substring(2, 11),
-        email,
-        name,
-        role,
+      const response = await fetch('http://localhost:5000/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password, role }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Registration failed');
+      }
+      
+      const userData = await response.json();
+      
+      // Save token to localStorage
+      localStorage.setItem('token', userData.token);
+      
+      // Transform backend data to match our User type
+      const authUser: User = {
+        id: userData._id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role as UserRole,
         createdAt: new Date()
       };
       
-      // Add to mock users (in a real app this would be saved to a database)
-      MOCK_USERS.push(newUser);
-      
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
+      setUser(authUser);
     } catch (error) {
       console.error("Registration failed", error);
       throw error;
@@ -95,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   return (
