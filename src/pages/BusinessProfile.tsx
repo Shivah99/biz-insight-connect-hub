@@ -26,6 +26,7 @@ const BusinessProfile = () => {
   const [messageContent, setMessageContent] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
   
   const business = getBusiness(id || "");
   
@@ -45,6 +46,10 @@ const BusinessProfile = () => {
       </PageLayout>
     );
   }
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
   
   const handleSendMessage = async () => {
     if (!user) {
@@ -186,7 +191,7 @@ const BusinessProfile = () => {
       
       {/* Business Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="overview">
+        <Tabs defaultValue="overview" value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="mb-8">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="financials">
@@ -217,7 +222,7 @@ const BusinessProfile = () => {
                     <div className="mt-4 text-center">
                       <Button
                         variant="link"
-                        onClick={() => document.querySelector('[data-value="products"]')?.click()}
+                        onClick={() => handleTabChange("products")}
                         className="text-business-primary hover:text-business-dark"
                       >
                         View All Products & Services
@@ -248,7 +253,7 @@ const BusinessProfile = () => {
                     />
                     <Button
                       variant="link"
-                      onClick={() => document.querySelector('[data-value="financials"]')?.click()}
+                      onClick={() => handleTabChange("financials")}
                       className="w-full text-business-primary hover:text-business-dark"
                     >
                       View Detailed Financials
