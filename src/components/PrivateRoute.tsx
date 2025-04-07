@@ -1,6 +1,7 @@
 
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Skeleton } from "./ui/skeleton";
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -14,7 +15,14 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
   const { isAuthenticated, user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return (
+      <div className="flex flex-col justify-center items-center h-screen p-4">
+        <Skeleton className="h-12 w-12 rounded-full mb-4" />
+        <Skeleton className="h-4 w-48 mb-2" />
+        <Skeleton className="h-4 w-32" />
+        <p className="mt-4 text-muted-foreground">Loading your profile...</p>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
